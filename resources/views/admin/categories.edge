@@ -1,0 +1,243 @@
+@layout('admin/main')
+
+@section('content')
+  <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3
+                border-bottom">
+
+      <h1 class="h2">Categories</h1>
+
+      <div class="btn-toolbar mb-2 mb-md-0">
+        <a type="button" class="btn btn-sm btn-outline-secondary" href="{{ route('addProduct') }}">
+          Add product <i class="fa fa-plus"></i>
+        </a>
+      </div>
+
+    </div>
+
+    @if(old('successNotif'))
+      <h6 class="alert alert-success">
+        {{ old('successNotif')}}
+      </h6>
+    @endif
+
+    @if(old('errorNotif'))
+      <div class="alert alert-danger">
+        {{ old('errorNotif')}}
+      </div>
+    @endif
+    
+    <form id="addForm" action="{{ route('categories') }}" method="POST">
+        {{ csrfField() }}
+        <div class="d-flex align-items-center ">
+            <h6 class="mr-2" for="name">Category's name :</h6>
+
+            <div class="col-6 col-md-5 form-group mb-2 mr-2">
+                <input class="form-control" placeholder="Ex: Fruits" type="text"
+                        name="name" value="{{ old('name', '') }}" >
+                @if(hasErrorFor('name'))
+                    <small class="text-danger">{{ getErrorFor('name') }}</small>
+                @endif
+            </div>
+            
+            <button type="submit" class="btn btn-secondary">Add</button>
+            
+        </div>
+    </form>
+
+    <hr>
+
+    <div class="row">
+      <div class="col-md-12">
+
+        @if(categories.length > 0)
+
+          <div class="row mt-2">
+
+            <div class="col-12 mb-2">
+
+              <div class="form-inline btn-group float-right mr-2">
+                <h6 class="mr-2">Action for select :</h6>
+                <button class="btn btn-outline-secondary btn-sm" onclick="select('deleteCategories')">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+
+            </div>
+
+            <div class="col-12">
+
+              <div class="form-inline float-left mr-1">
+                <select id="orderBy" class="form-control btn-sm"
+                        onchange="categories({{page}})">
+                  <option value="updated_at">Order by recently</option>
+                  <option value="name">Order by name</option>
+                  <option value="created_at">Order by date</option>
+                </select>
+              </div>
+
+              <div class="form-inline float-left mr-2">
+                <select id="onDesc" class="form-control btn-sm"
+                        onchange="categories({{page}})">
+                  <option value="1"><i class="fa fa-arrow-down"></i>Incr</option>
+                  <option value="-1"><i class="fa fa-arrow-up"></i>Desc</option>
+                </select>
+              </div>
+
+              <div class="form-inline float-left">
+                <select id="perPage" class="form-control btn-sm"
+                        onchange="categories({{page}})">
+                  <option value="10">10 per Page</option>
+                  <option value="20">20 per Page</option>
+                  <option value="30">30 per Page</option>
+                  <option value="40">40 per Page</option>
+                  <option value="50">50 per Page</option>
+                </select>
+
+              </div>
+
+              <div class="btn-group float-right">
+                  @each(p in pages)
+                    <button id="page{{p}}" class="btn btn-sm btn-outline-secondary" onclick="categories({{p}})">
+                      {{ p }}
+                    </button>
+                  @endeach
+              </div>
+
+            </div>
+            
+          </div>
+
+          <form id="myForm" action="{{ route('categoriesSelect') }}" method="POST">
+            {{ csrfField() }}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                      <th scope="col">Select</th>
+                      <th scope="col">Categories</th>
+                      <th scope="col">Created at</th>
+                      <th scope="col">Updated at</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @each((category, key) in categories)
+                        <tr>
+                          <td>
+                            <span>
+                              <input id="{{category.id}}" type="checkbox" name="{{ category.id }}">
+                            </span>
+                          </td>
+
+                          <td>{{ category.name }}</td>
+
+                          <td>{{ category.created_at }}</td>
+
+                          <td>{{ category.updated_at }}</td>
+
+                          <td class="d-flex">
+                            <a type="button" class="btn btn-outline-primary circle mr-4"
+                                href="{{ route('updateCategory', {id: category.id}) }}">
+                              <i class="fa fa-edit"></i>
+                            </a>
+
+                            <button type="button" class="btn btn-outline-danger circle"
+                                    onclick="deleteCategory({{key+1}})">
+                              <i class="fa fa-trash"></i>
+                            </button>
+
+                          </td>
+                        </tr>
+                    @endeach
+                </tbody>
+
+            </table>
+          </form>
+        @else
+            No category
+        @endif
+      </div>
+      
+    </div>
+
+  </main>
+
+  <style>
+    .circle {
+      width: 50px;
+      height: 50px;
+      border-radius: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+
+<script>
+
+  const page = {{{ toJSON(page) }}}
+  const perpage = {{{ toJSON(perPage) }}}
+  const orderBy = {{{ toJSON(orderBy) }}}
+  const onDesc = {{{ toJSON(onDesc) }}}
+
+  document.getElementById("page"+page).classList.add("active")
+  document.getElementById("perPage").value = perpage
+  document.getElementById("orderBy").value = orderBy
+  document.getElementById("onDesc").value = onDesc
+
+  function categories(newPage){
+    newPage = newPage? newPage : page
+    const perPage = document.getElementById('perPage').value
+    const orderBy = document.getElementById('orderBy').value
+    const onDesc = document.getElementById('onDesc').value
+    location.replace(
+      "/admin/categories/?orderBy="+orderBy+"&onDesc="+onDesc+"&perPage="+
+      perPage+"&page="+newPage
+    )
+  }
+
+  function deleteCategory(key){
+    const  categories = {{{ toJSON(categories)}}}
+    const category = (categories[key-1])
+    var onDelete = confirm("Are you sure to delete "+category.name+" ?")
+    if(onDelete){
+      location.replace("/admin/category/delete/"+category.id)
+    }
+  }
+
+
+  function select(action){
+    const  categories = {{{ toJSON(categories)}}}
+    const categoriesId = []
+
+    categories.forEach(category => {
+      const ok = document.getElementById(category.id).checked === true
+      if(ok){
+        categoriesId.push(category.id)
+      }
+    });
+
+    if(categoriesId.length > 0){
+      let on
+      if(action === "deleteCategories"){
+        on = confirm("Are you sure to delete, the "+categoriesId.length+" categories selected ?")
+      }
+
+      if(on){
+        var x = document.createElement("INPUT")
+        x.setAttribute("type", "text")
+        x.setAttribute("name", "action")
+        x.setAttribute("value", action)
+        document.getElementById("myForm").appendChild(x)
+        document.getElementById("myForm").submit();
+      }
+    }else{
+      alert("No categories are selected !")
+    }
+
+  }
+  
+</script>
+
+  
+@endsection

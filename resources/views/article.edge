@@ -1,0 +1,47 @@
+@layout('layouts.main')
+@section('content')
+  
+
+        <!-- Header -->
+        <header class="ex-header">
+            <div class="container px-4 sm:px-8 xl:px-4">
+                <h1 class="xl:ml-24">Article Details</h1>
+                <div class="flex justify-evently overflow-x-scroll mt-5 " >
+                    @each(category in categories)
+                        <div>                                              
+                            <div>                                                 
+                            <a href="{{route('articles',{category_id: category.id}) }}"
+                                class="block p-3 border-b-2 rounded m-2 no-underline text-red-500 hover:text-red-500 hover:border-red-500 transition duration-300 {{ ( category.id == c_category_id ) ? 'border-red-500' : ''}}" 
+                                style="width:max-content;"
+                                >
+                                {{category.name}}
+                            </a>                    
+                            </div>
+                        </div>             
+                    @else
+                    <div class="mx-auto text-center">
+                        Pas de catégorie 
+                    </div>
+                    @endeach
+                </div>
+            </div>
+            
+
+             <!-- end of container -->
+        </header> <!-- end of ex-header -->
+        <!-- end of header -->
+
+        <!-- Features -->
+        <div id="features" class="cards-1">
+            <div class="container px-4 sm:px-8 xl:px-4">
+
+                 @each(product in products)
+                  <!-- Card -->
+                @include('components.product')
+                <!-- end of card -->
+                @endeach                 
+
+            </div> <!-- end of container -->
+        </div> <!-- end of cards-1 -->
+        <!-- end of features -->
+     @endsection

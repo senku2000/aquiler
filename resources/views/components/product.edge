@@ -1,0 +1,13 @@
+<div class="card shadow bg-color" >
+    <div class="card-image w-full">
+        <img src="/{{product.imageUrl}}" alt="{{product.imageUrl}}" class="h-60 w-full" />
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">{{product.name }}</h5>
+        <p class="mb-4">{{product.description}}</p>
+    </div>
+    <div>
+        <div>{{product.price}}$</div>
+        <button class="p-3 bg-red-400 text-white hover:bg-red-500 transition duration-300" onclick="func('{{product.id}}')" >Ajouter au panier</button>
+    </div>
+</div>

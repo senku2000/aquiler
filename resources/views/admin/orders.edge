@@ -1,0 +1,280 @@
+@layout('admin/main')
+
+@section('content')
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3
+                border-bottom">
+
+            <h1 class="h2">Orders</h1>
+
+        </div>
+
+        @if(old('successNotif'))
+            <h6 class="alert alert-success">
+                {{ old('successNotif')}}
+            </h6>
+        @endif
+
+        @if(old('errorNotif'))
+            <h6 class="alert alert-danger">
+                {{ old('errorNotif')}}
+            </h6>
+        @endif
+
+        @if(orders.length > 0)
+            <div class="row">
+                <nav class="nav nav-tabs nav-stacked">
+                    <a id="notShipped" class="nav-link btn btn-outline-secondary"
+                        onclick="orders('notShipped', {{page}}, {{onDesc}})">
+                        Orders not shipped
+                    </a>
+                    <a id="shipped" class="nav-link btn btn-outline-secondary"
+                        onclick="orders('shipped', {{page}}, {{onDesc}})">
+                        Orders shipped
+                    </a>
+                    <a id="filter" class="nav-link btn btn-outline-secondary"
+                        onclick="orders('filter', {{page}}, {{onDesc}})">
+                        <i class="fa fa-filter"></i>
+                        Filter
+                    </a>
+                    <a id="searchByCode" class="nav-link btn btn-outline-secondary"
+                        onclick="orders('searchByCode', {{page}}, {{onDesc}})">
+                        <i class="fa fa-search"></i>
+                        Search by order code
+                    </a>
+                </nav>
+            </div>
+            
+
+            <div class="row mb-2 px-4">
+                @if(navTab==='searchByCode')
+
+                    <form class="col-6 my-2" action="" method="GET">
+                        <input class="form-control btn-sm mr-sm-2" type="text" placeholder="Enter order code"
+                                name="orderId">
+                    </form>
+                  
+                @elseif(navTab==='filter')
+                    
+                    <form class="col-12 my-2" action="" method="GET">
+                        <small class="form-group row mb-4">
+                            <div class="col-4 m-auto">
+                                <select class="form-control btn-sm" id="shipped" name="shipped">
+                                    <option>no matter</option>
+                                    <option>not shipped</option>
+                                    <option>shipped</option>
+                                </select>
+                            </div>
+                        </small>
+        
+                        <small class="form-group row mb-2">
+                            <label for="example-number-input1" class="col-2 col-form-label">Amount Min :</label>
+                            <div class="col-2">
+                            <input class="form-control btn-sm" type="number" id="example-number-input1" 
+                                        name="amountMin">
+                            </div>
+                            <label for="example-number-input2" class="col-2 col-form-label">Amount Max :</label>
+                            <div class="col-2">
+                            <input class="form-control btn-sm" type="number" id="example-number-input2"
+                                        name="amountMax">
+                            </div>
+                        </small>
+        
+                        <small class="form-group row mb-2">
+                            <label for="date-input1" class="col-2 col-form-label">Date : from</label>
+                            <div class="col-3">
+                                <input class="form-control btn-sm" type="date" id="date-input1" name="date1">
+                            </div>
+                            <label for="date-input2" class="col-1 col-form-label"> to </label>
+                            <div class="col-3">
+                                <input class="form-control btn-sm" type="date" id="date-input2" name="date2">
+                            </div>
+                        </small>
+
+                        <small class="form-group row">
+                            <button class="btn btn-outline-primary btn-sm col-3 m-auto">
+                                <i class="fa fa-search"></i> Search
+                            </button>
+                        </small>
+                    </form>
+                    
+                @endif
+                
+            </div>
+
+            <div class="row">
+
+                <div class="col-12 my-2">
+
+                  <div class="form-inline btn-group float-right">
+
+                    <h6 class="mr-2">Actions for select :</h6>
+      
+                    <button class="btn btn-outline-secondary btn-sm" onclick="select('shipped')">
+                      <i class="fa fa-plus mr-1"></i>
+                      <i class="fa fa-shopping-bag"></i>
+                    </button>
+      
+                    <button class="btn btn-outline-secondary btn-sm" onclick="select('deleteOrders')">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+      
+                </div>
+
+                @if(orthersLength>10)
+                    <div class="col-12">
+
+                        <div class="form-inline float-left mr-1">
+                            <select id="orderBy" class="form-control  form-select btn-sm"
+                                    onchange="orders({{navTab}}, {{page}}, {{onDesc}})">
+                            <option value="fullname">Order by name</option>
+                            <option value="cartPrice">Order by Total price</option>
+                            <option value="itemCount">Order by item count</option>
+                            <option value="created_at">Order by date</option>
+                            </select>
+                        </div>
+
+                        @if(orderBy!=='fullname')
+                            <div class="form-inline btn-group float-left mr-1">
+                                <button id="-1" class="btn btn-sm btn-outline-secondary"
+                                        onclick="orders({{navTab}}, {{page}}, -1)">
+                                    <i class="fa fa-arrow-down"></i>
+                                </button>
+                                <button id="1" class="btn btn-sm btn-outline-secondary"
+                                        onclick="orders({{navTab}}, {{page}}, 1)">
+                                    <i class="fa fa-arrow-up"></i>
+                                </button>
+                            </div>
+                        @endif
+                        
+                        <div class="form-inline float-left">
+                            <select id="perPage" class="form-control  form-select btn-sm"
+                                    onchange="orders({{navTab}}, {{page}}, {{onDesc}})">
+                                <option value="10">10 per Page </option>
+                                <option value="20">20 per Page </option>
+                                <option value="30">30 per Page </option>
+                                <option value="40">40 per Page </option>
+                                <option value="50">50 per Page </option>
+                            </select>
+                        </div>
+        
+                    <div class="btn-group float-right">
+                        @each(p in pages)
+                            <button id="page{{p}}" class="btn btn-sm btn-outline-secondary"
+                                    onclick="orders({{navTab}}, {{p}}, {{onDesc}})">
+                            {{ p }}
+                            </button>
+                        @endeach
+                    </div>
+        
+                    </div>
+                @endif
+            </div>
+
+            <hr>
+    
+            
+            <div class="table-responsive">
+                <form id="myForm" action="{{ route('orders') }}" method="POST">
+                    {{ csrfField() }}
+
+                    <table id="allOrders" class="table table-striped table-sm">
+
+                        <thead>
+                          <tr>
+                            <th scope="col">Select</th>
+                            <th scope="col">Code</th>
+                            <th scope="col">Full name</th>
+                            <th class="text-center" scope="col">Item count</th>
+                            <th class="text-center" scope="col">Total price</th>
+                            <th scope="col">Payment method</th>
+                            <th scope="col">Payment Id</th>
+                            <th scope="col">Shipped</th>
+                            <th scope="col">Sent at</th>
+                          </tr>
+                        </thead>
+
+                        
+                            <tbody>
+                                @each(order in orders)
+                                <tr>
+                                    <td><input id="id{{order.id}}" type="checkbox" name=""></td>
+
+                                    <td>{{ order.id }}</td>
+                                    <td>{{ order.deliveryAddress.fullname }}</td>
+                                    <td class="text-right">{{ order.cart.itemCount }}</td>
+                                    <td class="text-right">{{ order.cart.cartPrice }}</td>
+                                    <td>{{ order.payment.paymentMethod }}</td>
+                                    <td>{{ order.payment.paymentId }}</td>
+
+                                    @if(order.shipped)
+                                    <td>Shipped</td>
+                                    @else
+                                    <td>Not shipped</td>
+                                    @endif
+
+                                    <td>{{ order.created_at }}</td>
+
+                                    <td>
+                                        <a href="{{ route('viewOrder', {id: order.id}) }}">
+                                            <i class="fa fa-eye btn btn-primay"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                @endeach
+                            </tbody>
+                        
+                </form>
+            </div>
+        @else
+          No orders
+        @endif
+
+
+    </main>
+
+    <script>
+        const orthersLength = {{{ toJSON(orthersLength) }}}
+        const page = {{{ toJSON(page) }}}
+        const perPage = {{{ toJSON(perPage) }}}
+        const navTab = {{{ toJSON(navTab) }}}
+        const orderBy = {{{ toJSON(orderBy) }}}
+        const onDesc = {{{ toJSON(onDesc) }}}
+
+        document.getElementById(navTab).classList.add('active')
+
+        if(orthersLength>10){
+            document.getElementById('page'+page).classList.add('active')
+            document.getElementById(onDesc).classList.add('active')
+
+            document.getElementById('orderBy').value = orderBy
+            document.getElementById('perPage').value = perPage
+
+            if(orderBy!=='fullname'){
+                document.getElementById('onDesc').value = onDesc
+            }
+        }
+
+        function orders(newNavTab, newPage, newOnDesc){
+            newOnDesc = newOnDesc? newOnDesc : onDesc
+            newPage = newPage? newPage : page
+            newNavTab = newNavTab? newNavTab : navTab
+
+            if(orthersLength>10){
+                const perPage = document.getElementById('perPage').value
+                const orderBy = document.getElementById('orderBy').value
+            }
+            
+            location.replace(
+                "/admin/orders/?orders="+newNavTab+"&orderBy="+orderBy+"&onDesc="+newOnDesc+"&perPage="+
+                perPage+"&page="+newPage
+            )
+        }
+
+        function select(action){
+
+        }
+    </script>
+@endsection

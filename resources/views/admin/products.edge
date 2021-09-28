@@ -1,0 +1,316 @@
+
+@layout('admin/main')
+
+@section('content')
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3
+                border-bottom">
+
+      <h1 class="h2">Products</h1>
+
+      <div class="btn-toolbar mb-2 mb-md-0">
+        <a type="button" class="btn btn-sm btn-outline-secondary mr-2" href="{{ route('addProduct') }}">
+          Add product <i class="fa fa-plus"></i>
+        </a>
+        <a type="button" class="btn btn-sm btn-outline-secondary" href="{{ route('categories') }}">
+          Add category <i class="fa fa-plus"></i>
+        </a>
+      </div>
+
+    </div>
+
+    @if(old('successNotif'))
+      <h6 class="alert alert-success">
+        {{ old('successNotif')}}
+      </h6>
+    @endif
+
+    @if(old('errorNotif'))
+      <div class="alert alert-danger">
+        {{ old('errorNotif')}}
+      </div>
+    @endif
+
+    @if(products.length > 0)
+      <ul class="nav nav-tabs">
+
+        <li class="nav-item">
+          <a id="all" class="btn nav-link" onclick="products('all', {{page}})">
+            <strong>All Products</strong>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a id="onStore" class="btn nav-link" onclick="products('onStore', {{page}})">
+            <strong>On store</strong>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a id="offStore" class="btn nav-link" onclick="products('offStore', {{page}})">
+            <strong>Not on store</strong>
+          </a>
+        </li>
+
+      </ul>
+
+      <div class="row mt-2">
+
+          <div class="col-12 mb-2">
+
+            <div class="form-inline btn-group float-right">
+              <h6 class="mr-2">
+                Actions for select :
+              </h6>
+              <button class="btn btn-outline-secondary btn-sm" onclick="select('addStore')">
+                <i class="fa fa-plus mr-1"></i>
+                <i class="fa fa-shopping-bag"></i>
+              </button>
+
+              <button class="btn btn-outline-secondary btn-sm" onclick="select('removeStore')">
+                <i class="fa fa-minus mr-1"></i>
+                <i class="fa fa-plus fa-shopping-bag"></i>
+              </button>
+
+              <button class="btn btn-outline-secondary btn-sm" onclick="select('deleteProducts')">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+
+          </div>
+
+          <div class="col-12">
+
+            <div class="form-inline float-left mr-1">
+              <select id="orderBy" class="form-control btn-sm"
+                      onchange="products()">
+                <option value="updated_at">Order by recently</option>
+                <option value="name">Order by name</option>
+                <option value="category">Order by category</option>
+                <option value="price">Order by price</option>
+                <option value="quantity">Order by quantity</option>
+                <option value="created_at">Order by date</option>
+              </select>
+            </div>
+
+            <div class="form-inline float-left mr-1">
+              <select id="onDesc" class="form-control btn-sm"
+                      onchange="products()">
+                <option value="1"><i class="fa fa-arrow-down"></i>Incr</option>
+                <option value="-1"><i class="fa fa-arrow-up"></i>Desc</option>
+              </select>
+            </div>
+
+            <div class="form-inline float-left">
+              <select id="perPage" class="form-control btn-sm"
+                      onchange="products()">
+                <option value="10">10 per Page</option>
+                <option value="20">20 per Page</option>
+                <option value="30">30 per Page</option>
+                <option value="40">40 per Page</option>
+                <option value="50">50 per Page</option>
+              </select>
+            </div>
+
+            <div class="btn-group float-right">
+                @each(p in pages)
+                  <button id="page{{p}}" class="btn btn-sm btn-outline-secondary" onclick="products({{prod}}, {{p}})">
+                    {{ p }}
+                  </button>
+                @endeach
+            </div>
+
+          </div>
+          
+      </div>
+      
+
+      <div class="table-responsive">
+
+        <form id="myForm" action="{{ route('products') }}" method="POST">
+          {{ csrfField() }}
+
+          <table id="allProduct" class="table table-striped table-sm">
+            <thead>
+
+              <tr>
+                <th scope="col">Select</th>
+                <th scope="col">Code</th>
+                <th scope="col">Image</th>
+                <th scope="col">Product name</th>
+                <th scope="col">Category</th>
+                <th class="text-right" scope="col">Price</th>
+                <th class="text-right" scope="col">Quantity</th>
+                <th scope="col">On store</th>
+                <th scope="col">Created at</th>
+              </tr>
+
+            </thead>
+            <tbody>
+            
+              
+              @each((product, key) in products)
+                <tr class="h-20">
+                  <td>
+                    <span>
+                      <input id="{{product.code}}" type="checkbox" name="{{product.code}}">
+                    </span>
+                  </td>
+
+                  
+                  <td>{{ product.code }}</td>
+
+                  <td>
+                    @if(product.imageUrl)
+                      <img src="{{ assetsUrl(product.imageUrl) }}" class="h-20 w-20">
+                    @else
+                      No image
+                    @endif
+                  </td>
+
+                  <td>{{ product.name }}</td>
+
+                  <td>
+                    {{ product.category.name }}
+                  </td>
+
+                  <td class="text-right">{{ product.price }}</td>
+
+                  <td class="text-right">{{ product.quantity }}</td>
+
+                  <td>
+                    @if(product.onStore)
+                      <i class="fa fa-store"></i>
+                      Yes
+                    @else
+                      No
+                    @endif
+                  </td>
+
+                  <td>{{ product.created_at }}</td>
+
+                  <td>
+                    <div class="flex">
+                      <a type="button" class="btn btn-outline-primary circle mr-2"
+                          href="{{ route('updateProduct', {code:product.code}) }}">
+                        <i class="fa fa-edit"></i>
+                      </a>
+
+                      <button onclick="deleteProduct({{key+1}})" type="button"
+                              class="btn btn-outline-danger circle">
+                        <i class="fa fa-trash"></i>
+                      </button>
+
+                    </div>
+                  </td>
+
+                </tr>
+              @endeach
+            
+            </tbody>
+          </table>
+
+        </form>
+
+      </div>
+      
+    @else
+      <p>no products</p>
+    @endif
+
+    
+
+</main>
+
+<style>
+  .circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+
+
+<script>
+  const page = {{{ toJSON(page) }}}
+  const perpage = {{{ toJSON(perPage) }}}
+  const prod = {{{ toJSON(prod) }}}
+  const orderBy = {{{ toJSON(orderBy) }}}
+  const onDesc = {{{ toJSON(onDesc) }}}
+
+  document.getElementById(prod).classList.add("active")
+  document.getElementById("page"+page).classList.add("active")
+  document.getElementById("perPage").value = perpage
+  document.getElementById("orderBy").value = orderBy
+  document.getElementById("onDesc").value = onDesc
+
+  function products(newProd, newPage){
+    newProd = newProd? newProd : prod
+    newPage = newPage? newPage : page
+    const perPage = document.getElementById('perPage').value
+    const orderBy = document.getElementById('orderBy').value
+    const onDesc = document.getElementById('onDesc').value
+    location.replace(
+      "/admin/products/?products="+newProd+"&orderBy="+orderBy+"&onDesc="+onDesc+"&perPage="+
+      perPage+"&page="+newPage
+    )
+  }
+
+  function deleteProduct(key){
+    const  products = {{{ toJSON(products)}}}
+    const product = (products[key-1])
+    var onDelete = confirm("Are you sure to delete "+product.name+" ?")
+    if(onDelete){
+      location.replace("/admin/product/delete/"+product.code)
+    }
+  }
+
+
+  function select(action){
+    const  products = {{{ toJSON(products)}}}
+    const productsCodes = []
+
+    products.forEach(product => {
+      const ok = document.getElementById(product.code).checked === true
+      if(ok){
+        productsCodes.push(product.code)
+      }
+    });
+
+    if(productsCodes.length > 0){
+      let on
+      switch(action){
+        case "addStore":
+          on = confirm("Are you sure to add on the store, the "+productsCodes.length+" products selected ?")
+          break;
+        case "removeStore":
+          on = confirm("Are you sure to remove from the store, the "+productsCodes.length+" products selected ?")
+          break;
+        case "deleteProducts":
+          on = confirm("Are you sure to delete, the "+productsCodes.length+" products selected ?")
+          break;
+      }
+
+      if(on){
+        var x = document.createElement("INPUT")
+        x.setAttribute("type", "text")
+        x.setAttribute("name", "action")
+        x.setAttribute("value", action)
+        document.getElementById("myForm").appendChild(x)
+        document.getElementById("myForm").submit();
+      }
+    }else{
+      alert("No product is selected !")
+    }
+
+  }
+  
+</script>
+
+
+@endsection
+
+
